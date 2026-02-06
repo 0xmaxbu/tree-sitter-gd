@@ -1,0 +1,18 @@
+docs/
+test/
+
+# Godot
+.godot/
+*.import
+
+# Build artifacts
+addons/ai_script_plugin/bin/*.dll
+addons/ai_script_plugin/bin/*.so
+addons/ai_script_plugin/bin/*.dylib
+*.os
+*.o
+*.obj
+
+# SCons
+.sconsign.dblite
+*.pyc

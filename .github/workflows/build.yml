@@ -1,0 +1,156 @@
+name: Build Multi-Platform
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [ created ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x86_64
+            os: windows-latest
+            platform: windows
+            arch: x86_64
+            artifact_name: ast.windows.x86_64.dll
+            artifact_path: addons/ai_script_plugin/bin/
+
+          - name: Linux x86_64
+            os: ubuntu-latest
+            platform: linux
+            arch: x86_64
+            artifact_name: libast.linux.x86_64.so
+            artifact_path: addons/ai_script_plugin/bin/
+
+          - name: macOS Universal
+            os: macos-latest
+            platform: macos
+            arch: universal
+            artifact_name: libast.macos.universal.dylib
+            artifact_path: addons/ai_script_plugin/bin/
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install SCons
+        run: pip install scons
+
+      - name: Setup MSVC (Windows only)
+        if: matrix.platform == 'windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build godot-cpp
+        run: |
+          scons -C thirdparty/godot-cpp platform=${{ matrix.platform }} arch=${{ matrix.arch }} target=template_release
+
+      - name: Build GDExtension
+        run: |
+          scons platform=${{ matrix.platform }} arch=${{ matrix.arch }} target=template_release
+
+      - name: Find and rename library (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $binPath = "addons/ai_script_plugin/bin"
+          $files = Get-ChildItem -Path $binPath -Filter "*.dll" -Recurse
+          if ($files.Count -eq 0) {
+            Write-Error "No DLL found in $binPath"
+            exit 1
+          }
+          $sourceFile = $files[0].FullName
+          $targetFile = Join-Path $binPath "${{ matrix.artifact_name }}"
+          Copy-Item -Path $sourceFile -Destination $targetFile -Force
+          Write-Host "Copied $sourceFile to $targetFile"
+
+      - name: Find and rename library (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          BIN_PATH="addons/ai_script_plugin/bin"
+          SOURCE_FILE=$(find "$BIN_PATH" -name "*.so" -type f | head -n 1)
+          if [ -z "$SOURCE_FILE" ]; then
+            echo "No .so found in $BIN_PATH"
+            exit 1
+          fi
+          TARGET_FILE="$BIN_PATH/${{ matrix.artifact_name }}"
+          cp "$SOURCE_FILE" "$TARGET_FILE"
+          echo "Copied $SOURCE_FILE to $TARGET_FILE"
+
+      - name: Find and rename library (macOS)
+        if: matrix.platform == 'macos'
+        run: |
+          BIN_PATH="addons/ai_script_plugin/bin"
+          SOURCE_FILE=$(find "$BIN_PATH" -type f \( -name "libast.*" ! -name "*.a" \) | head -n 1)
+          if [ -z "$SOURCE_FILE" ]; then
+            echo "No library found in $BIN_PATH"
+            exit 1
+          fi
+          TARGET_FILE="$BIN_PATH/${{ matrix.artifact_name }}"
+          cp "$SOURCE_FILE" "$TARGET_FILE"
+          echo "Copied $SOURCE_FILE to $TARGET_FILE"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-${{ matrix.arch }}
+          path: addons/ai_script_plugin/bin/${{ matrix.artifact_name }}
+          if-no-files-found: error
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'release'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release structure
+        run: |
+          mkdir -p release_package/addons/ai_script_plugin/bin
+          
+          cp artifacts/windows-x86_64/ast.windows.x86_64.dll release_package/addons/ai_script_plugin/bin/
+          cp artifacts/linux-x86_64/libast.linux.x86_64.so release_package/addons/ai_script_plugin/bin/
+          cp artifacts/macos-universal/libast.macos.universal.dylib release_package/addons/ai_script_plugin/bin/
+          
+          cp addons/ai_script_plugin/ast.gdextension release_package/addons/ai_script_plugin/
+          cp addons/ai_script_plugin/plugin.cfg release_package/addons/ai_script_plugin/
+          cp addons/ai_script_plugin/plugin.gd release_package/addons/ai_script_plugin/
+          
+          ls -R release_package/
+
+      - name: Create ZIP
+        run: |
+          cd release_package
+          zip -r ../ai_script_plugin.zip addons/
+          cd ..
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ai_script_plugin.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

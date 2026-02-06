@@ -1,0 +1,13 @@
+[configuration]
+
+entry_symbol = "ast_library_init"
+compatibility_minimum = "4.3"
+
+[libraries]
+
+macos.debug = "res://addons/ai_script_plugin/bin/libast.macos.template_debug.framework/libast.macos.template_debug"
+macos.release = "res://addons/ai_script_plugin/bin/libast.macos.universal.dylib"
+windows.debug.x86_64 = "res://addons/ai_script_plugin/bin/libast.windows.template_debug.x86_64.dll"
+windows.release.x86_64 = "res://addons/ai_script_plugin/bin/ast.windows.x86_64.dll"
+linux.debug.x86_64 = "res://addons/ai_script_plugin/bin/libast.linux.template_debug.x86_64.so"
+linux.release.x86_64 = "res://addons/ai_script_plugin/bin/libast.linux.x86_64.so"

@@ -1,0 +1,10 @@
+[submodule "thirdparty/tree-sitter"]
+	path = thirdparty/tree-sitter
+	url = https://github.com/tree-sitter/tree-sitter.git
+[submodule "thirdparty/tree-sitter-gdscript"]
+	path = thirdparty/tree-sitter-gdscript
+	url = https://github.com/PrestonKnopp/tree-sitter-gdscript.git
+[submodule "thirdparty/godot-cpp"]
+	path = thirdparty/godot-cpp
+	url = https://github.com/godotengine/godot-cpp.git
+	branch = godot-4.3-stable
