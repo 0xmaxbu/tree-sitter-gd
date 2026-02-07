@@ -5,8 +5,8 @@ compatibility_minimum = "4.3"
 
 [libraries]
 
-macos.debug = "res://addons/ai_script_plugin/bin/libast.macos.template_debug.framework/libast.macos.universal.dylib"
-macos.release = "res://addons/ai_script_plugin/bin/libast.macos.template_debug.framework/libast.macos.universal.dylib"
+macos.debug = "res://addons/ai_script_plugin/bin/libast.macos.universal.dylib"
+macos.release = "res://addons/ai_script_plugin/bin/libast.macos.universal.dylib"
 windows.debug.x86_64 = "res://addons/ai_script_plugin/bin/libast.windows.template_debug.x86_64.dll"
 windows.release.x86_64 = "res://addons/ai_script_plugin/bin/ast.windows.x86_64.dll"
 linux.debug.x86_64 = "res://addons/ai_script_plugin/bin/libast.linux.template_debug.x86_64.so"
