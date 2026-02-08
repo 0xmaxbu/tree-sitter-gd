@@ -639,45 +639,6 @@ xattr -cr addons/ai_script_plugin/bin/libast.macos.universal.dylib
 - 频繁修改的文件保持打开状态，利用增量解析优势
 - 复杂查询（深层嵌套）可能耗时较长，考虑异步处理
 
-## 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
-
-### 开发流程
-1. Fork 本仓库
-2. 创建特性分支：`git checkout -b feature/amazing-feature`
-3. 提交更改：`git commit -m 'Add amazing feature'`
-4. 推送分支：`git push origin feature/amazing-feature`
-5. 创建 Pull Request
-
-### 提交规范
-- 提交信息使用中文或英文
-- 格式：`<type>: <description>`
-  - `feat`: 新功能
-  - `fix`: 修复 Bug
-  - `docs`: 文档更新
-  - `test`: 测试相关
-  - `refactor`: 代码重构
-  - `ci`: CI/CD 更新
-
-### 测试要求
-- 新功能需提供测试用例
-- 确保所有现有测试通过
-- 运行 `test/phase8_quick_tests/test_*.gd` 验证
-
-## 路线图
-
-- [x] Phase 1-2: 基础解析功能
-- [x] Phase 3: 文件管理系统
-- [x] Phase 4: AST 查询功能
-- [x] Phase 5: 字节级文本编辑
-- [x] Phase 6: AST 节点编辑
-- [x] Phase 7: 代码差异与验证
-- [x] Phase 8: CI/CD 自动构建
-- [ ] Phase 9: 性能优化和缓存机制
-- [ ] Phase 10: 代码补全和智能提示
-- [ ] Phase 11: Godot 编辑器集成
-
 ## 许可证
 
 本项目使用 MIT 许可证。详见 LICENSE 文件。
