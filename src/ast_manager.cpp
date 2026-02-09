@@ -841,7 +841,12 @@ Dictionary ASTManager::validate(const String &source_code) {
 				} else {
 					error["context"] = "";
 				}
-
+				TSNode parent = ts_node_parent(node);
+				if (!ts_node_is_null(parent)) {
+					error["parent_kind"] = String(ts_node_type(parent));
+				} else {
+					error["parent_kind"] = String("root");
+				}
 				errors.push_back(error);
 				error_count++;
 			}

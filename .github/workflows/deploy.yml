@@ -1,0 +1,55 @@
+name: release # 任务名称
+
+on: # 触发条件
+  push: # 在push时触发
+    branches: # 分支
+      - main # 主分支
+
+jobs: # 任务
+  build: # 任务ID
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        platform: [linux, windows, macos]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: windows
+          - os: macos-latest
+            platform: macos
+    steps:
+      - uses: actions/checkout@v4 # 检出代码
+        with:
+          submodules: recursive
+
+      - name: Install SCons
+        run: pip install scons
+
+      - name: Build
+        run: scons target=template_debug platform=${{ matrix.platform }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.platform }}
+          path: addons/ai_script_plugin/bin/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create tag
+        run: |
+          git tag ${{ github.sha }}
+          git push origin ${{ github.sha }}
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.sha }}
+          name: Release ${{ github.sha }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
